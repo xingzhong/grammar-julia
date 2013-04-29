@@ -12,4 +12,6 @@ N = size(feature, 1)
 feature = reshape(feature, N, 4, 20)
 # feature [ timeindex, xyz, agent#]
 println("\nloading data")
-show(feature[200:205, :, 7])
+Observations = mapslices(diff, feature, 1)
+show(Observations)
+println()
