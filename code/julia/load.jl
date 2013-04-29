@@ -6,7 +6,10 @@ end
 
 fileName = "../../sample/P1_1_1_p06.csv"
 data = readdlm(fileName)
-time = data[:, 1]
+timestamp = data[:, 1]
 feature = data[:, 2:]
-show(feature)
+N = size(feature, 1)
+feature = reshape(feature, N, 4, 20)
+# feature [ timeindex, xyz, agent#]
 println("\nloading data")
+show(feature[200:205, :, 7])
