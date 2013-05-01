@@ -16,6 +16,7 @@ type Production
     Production(lhs, lrhs::Terminal, rrhs, prob) = new(lhs,lrhs,(),prob)
 end
 
+
 grammar = Array(Production, 0)
 Nonterminals = Array(Nonterminal, 0)
 Terminals = Array(Terminal, 0)
