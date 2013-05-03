@@ -80,8 +80,8 @@ function CYK(O, A, B)
       end
       
   end
-  #println("Init Gamma")
-  #debug_SortDict(Gamma)
+  println("Init Gamma")
+  debug_SortDict(Gamma)
   # bottom-up
   for dt in 1:T
     for s in 1:T
@@ -94,8 +94,12 @@ function CYK(O, A, B)
               j = rule[2]
               k = rule[3]
               for r in s:t-1 
+                  println((s,t,r,rule))
+                  println((s,r,j, haskey(Gamma, (s,r,j))))
+                  println((r+1,t,k, haskey(Gamma, (r+1,t,k))))
                   if haskey(A, rule) && haskey(Gamma, (s,r,j)) && haskey(Gamma, (r+1, t, k))
                     merge!( max_g,  {(r, rule[2], rule[3]) => log(get(A, rule, 0)) +  get(Gamma, (s,r,j),0) + get(Gamma, (r+1,t,k),0)} )
+                    println((s,r,j,k,rule))
                   end
               end
               if haskey(Gamma, (s,t,i))
@@ -114,16 +118,19 @@ function CYK(O, A, B)
 end
 
 function _buildTree(key, value::String, tau)
-    println((key, value))
+    #println((key, value))
+    print("["*key[3].symbol*" "*value*" ]")
 end
 function _buildTree(key, value::(Int, Nonterminal, Nonterminal), tau)
-    println((key, value))
+    #println((key, value))
+    print("["*key[3].symbol*" ")
     left_key = (key[1], value[1], value[2])
     right_key = (value[1]+1, key[2], value[3])
     left = get(tau, left_key, "error")
     right = get(tau, right_key, "error")
     _buildTree(left_key, left, tau)
     _buildTree(right_key, right, tau)
+    print("]")
 end
 function buildTree(tau, start, O)
   T = size(O, 1)
