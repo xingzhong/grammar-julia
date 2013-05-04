@@ -94,12 +94,12 @@ function CYK(O, A, B)
               j = rule[2]
               k = rule[3]
               for r in s:t-1 
-                  println((s,t,r,rule))
-                  println((s,r,j, haskey(Gamma, (s,r,j))))
-                  println((r+1,t,k, haskey(Gamma, (r+1,t,k))))
+                  #println((s,t,r,rule))
+                  #println((s,r,j, haskey(Gamma, (s,r,j))))
+                  #println((r+1,t,k, haskey(Gamma, (r+1,t,k))))
                   if haskey(A, rule) && haskey(Gamma, (s,r,j)) && haskey(Gamma, (r+1, t, k))
                     merge!( max_g,  {(r, rule[2], rule[3]) => log(get(A, rule, 0)) +  get(Gamma, (s,r,j),0) + get(Gamma, (r+1,t,k),0)} )
-                    println((s,r,j,k,rule))
+                    #println((s,r,j,k,rule))
                   end
               end
               if haskey(Gamma, (s,t,i))
