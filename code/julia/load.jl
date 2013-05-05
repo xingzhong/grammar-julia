@@ -5,29 +5,49 @@ type frame
   feature::Array{Float64, 1}
 end
 
-fileName = "../../sample/P1_1_1_p06.csv"
+include("Grammar.jl")
+include("Inside.jl")
+
+
+fileName = "../../sample/P3_2_8_p02.csv"
 data = readdlm(fileName)
 timestamp = data[:, 1]
 feature = data[:, 2:]
 N = size(feature, 1)
 feature = reshape(feature, N, 4, 20)
 # feature [ timeindex, xyz, agent#]
+nonzeroInd = findfirst(feature[:, 4, :])
+feature = feature[nonzeroInd:, 1:3, :]
+
 println("\nloading data")
 Observations = mapslices(diff, feature, 1)
-show(Observations)
+#show(Observations)
+println()
+TEST = Observations[150:200, :, 7] # 119
+#TEST = Observations[120:155, :, 7] # 128
+show(TEST)
+grammar = "./circle.cnf"
+A, B, S = loadGrammar(grammar)
+Gamma, Tau = CYK(TEST, A, B)
+#println("Final Gamma")
+#debug_SortDict(Gamma)
+#println("Final Tau")
+#for t in Tau
+#    println(t)
+#end
+println("parse")
+loglik = buildTree(Tau, S, TEST)
+println(loglik)
 println()
 
 p1 = FramedPlot()
 p2 = FramedPlot()
 p3 = FramedPlot()
-p4 = FramedPlot()
-p = Table(4,1)
-add( p1, Curve(timestamp[1:N-1], Observations[:,1,1]))
-add( p2, Curve(timestamp[1:N-1], Observations[:,2,1]))
-add( p3, Curve(timestamp[1:N-1], Observations[:,3,1]))
-add( p4, Curve(timestamp[1:N-1], Observations[:,4,1]))
+p = Table(3,1)
+add( p1, Curve(1:size(TEST,1), TEST[:,1,1]))
+add( p2, Curve(1:size(TEST,1), TEST[:,2,1]))
+add( p3, Curve(1:size(TEST,1), TEST[:,3,1]))
 p[1,1] = p1
 p[2,1] = p2
 p[3,1] = p3
-p[4,1] = p4
 file(p, "test.png")

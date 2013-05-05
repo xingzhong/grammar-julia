@@ -1,4 +1,5 @@
 # grammar julia
+using Distributions
 type Nonterminal
     symbol::String
 end
@@ -30,7 +31,6 @@ function eachcnf(lhsKey, rhsKey, g, nt, t)
       covr = eval( parse( "["*rhsKey[3]*"]") )
       if haskey(t, lhsKey)
           lhs = get(t, lhsKey, -1)
-          println(lhs)
           lhs.dist = MultivariateNormal(mean, covr)
       else
           lhs = Terminal( lhsKey, MultivariateNormal(mean, covr) )
@@ -86,18 +86,18 @@ function loadGrammar(file)
     for i in 1:N
       eachcnf(data[i,1], data[i,2], grammar, Nonterminals, Terminals)
     end
-    println("Grammar")
-    for s in grammar
-        println(s)
-    end
-    println("Terminal")
-    for t in Terminals
-        println(t)
-    end
-    println("Nonterminal")
-    for n in Nonterminals
-        println(n)
-    end
+    #println("Grammar")
+    #for s in grammar
+    #    println(s)
+    #end
+    #println("Terminal")
+    #for t in Terminals
+    #    println(t)
+    #end
+    #println("Nonterminal")
+    #for n in Nonterminals
+    #    println(n)
+    #end
     A = {(x.lhs::Nonterminal, x.lrhs::Nonterminal, x.rrhs::Nonterminal) => x.prob for x = filter( y-> isa(y.lrhs, Nonterminal), grammar) }
     B = {(x.lhs::Nonterminal, x.lrhs::Terminal) => x.prob for x = filter( y-> isa(y.lrhs, Terminal), grammar) }
     start = get(Nonterminals, data[1,1], "error")

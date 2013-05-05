@@ -84,6 +84,7 @@ function CYK(O, A, B)
   debug_SortDict(Gamma)
   # bottom-up
   for dt in 1:T
+    println(dt/T)
     for s in 1:T
         t = s + dt
         if t<=T
@@ -119,7 +120,7 @@ end
 
 function _buildTree(key, value::String, tau)
     #println((key, value))
-    print("["*key[3].symbol*" "*value*" ]")
+    print("["*key[3].symbol*" "*value*"_"*string(key[1])*" ]")
 end
 function _buildTree(key, value::(Int, Nonterminal, Nonterminal), tau)
     #println((key, value))
