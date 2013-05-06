@@ -1,29 +1,14 @@
 # julia script
-using Winston
-type frame
-  timestamp::Float64
-  feature::Array{Float64, 1}
-end
-
+include("loader.jl")
 include("Grammar.jl")
 include("Inside.jl")
 
-
-fileName = "../../sample/P3_2_8_p02.csv"
-data = readdlm(fileName)
-timestamp = data[:, 1]
-feature = data[:, 2:]
-N = size(feature, 1)
-feature = reshape(feature, N, 4, 20)
-# feature [ timeindex, xyz, agent#]
-nonzeroInd = findfirst(feature[:, 4, :])
-feature = feature[nonzeroInd:, 1:3, :]
-
+#fileName = "../../sample/P3_2_8_p02.csv"
 println("\nloading data")
-Observations = mapslices(diff, feature, 1)
-#show(Observations)
-println()
-TEST = Observations[150:200, :, 7] # 119
+fileName = "../../sample/P1_1_12_p19.csv"
+frame = DataMS(fileName)
+
+TEST = frame.ob[150:200, :, 7] # 119
 #TEST = Observations[120:155, :, 7] # 128
 show(TEST)
 grammar = "./circle.cnf"

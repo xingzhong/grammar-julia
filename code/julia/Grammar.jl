@@ -1,26 +1,22 @@
 # grammar julia
 using Distributions
-type Nonterminal
+abstract Symbol # the abstract type for nonterminal and Terminal
+immutable Nonterminal <: Symbol
     symbol::String
 end
-#function isequal(x::Nonterminal, y::Nonterminal)
-#  return x.symbol == y.symbol
-#end
-type Terminal
+
+type Terminal <: Symbol
     symbol::String
     dist::Distribution
 end
-#function isequal(x::Terminal, y::Terminal)
-#  return x.symbol == y.symbol
-#end
 
-type Production
+immutable Production
     lhs::Nonterminal
-    lrhs
+    lrhs::Symbol
     rrhs
     prob::Float64
     Production(lhs, lrhs::Nonterminal, rrhs::Nonterminal, prob) = new(lhs,lrhs,rrhs,prob)
-    Production(lhs, lrhs::Terminal, rrhs, prob) = new(lhs,lrhs,(),prob)
+    Production(lhs, lrhs::Terminal, rrhs::(), prob) = new(lhs,lrhs,(),prob)
 end
 
 function eachcnf(lhsKey, rhsKey, g, nt, t)
