@@ -75,16 +75,17 @@ function CYK(O, A, B)
         i = rule[1]
         m = rule[2]
         b = get(B, rule, 0)
+        #println((i,m,b,o))
         merge!(Gamma, {(s,s,i) => log(b) + logpdf(m.dist, o)})
         merge!(Tau,  {(s,s,i) => m.symbol} )
       end
       
   end
-  println("Init Gamma")
-  debug_SortDict(Gamma)
+  # println("Init Gamma")
+  # debug_SortDict(Gamma)
   # bottom-up
   for dt in 1:T
-    println(dt/T)
+    @printf(STDOUT, "\r%.2f%%", 100*dt/T)
     for s in 1:T
         t = s + dt
         if t<=T
@@ -120,11 +121,13 @@ end
 
 function _buildTree(key, value::String, tau)
     #println((key, value))
-    print("["*key[3].symbol*" "*value*"_"*string(key[1])*" ]")
+    tmp = @sprintf("[%s(%d) %s_%s]", key[3].symbol, key[1], value, key[1])
+    print(tmp)
 end
 function _buildTree(key, value::(Int, Nonterminal, Nonterminal), tau)
     #println((key, value))
-    print("["*key[3].symbol*" ")
+    tmp = @sprintf("[%s(%d:%d) ", key[3].symbol, key[1], key[2])
+    print(tmp)
     left_key = (key[1], value[1], value[2])
     right_key = (value[1]+1, key[2], value[3])
     left = get(tau, left_key, "error")

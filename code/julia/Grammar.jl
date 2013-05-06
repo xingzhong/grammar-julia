@@ -20,48 +20,53 @@ immutable Production
 end
 
 function eachcnf(lhsKey, rhsKey, g, nt, t)
-  #FIXME need make sure the uniqueness 
+  
   if beginswith(rhsKey, '[')
+    # response rule
       rhsKey = split(rhsKey, ['[', ']'], 0, false)
       mean = eval( parse( "["*rhsKey[1]*"]") )
       covr = eval( parse( "["*rhsKey[3]*"]") )
       if haskey(t, lhsKey)
-          lhs = get(t, lhsKey, -1)
+          lhs = t[lhsKey]
           lhs.dist = MultivariateNormal(mean, covr)
       else
           lhs = Terminal( lhsKey, MultivariateNormal(mean, covr) )
       end
-      merge!(t, {lhsKey=>lhs}) 
+      t[lhsKey] = lhs
+      
   else
+      # regular rule
       if haskey(nt, lhsKey)
-          lhs = get(nt, lhsKey, -1)
+          lhs = nt[lhsKey]
       else
           lhs = Nonterminal( lhsKey )
-          merge!(nt, {lhsKey => lhs})
+          nt[lhsKey] = lhs
       end
       rhsKeys = split( rhsKey, ['[',']',' '], 0, false)
       if length( rhsKeys ) == 2
+        # Terminal rule
           if haskey(t, rhsKey[1])
-              m = get(t, rhsKey[1], -1)
+              m = t[rhsKey[1]]
           else
-              m = Terminal( rhsKeys[1], MultivariateNormal([0.0,1.0,0.0], [1.0 0.0 0.0; 0.0 1.0 0.0; 0.0 0.0 1.0]) )
-              merge!(t, {rhsKeys[1] => m})
+              m = Terminal( rhsKeys[1], MultivariateNormal([0.0], eye(1)))
+              t[rhsKeys[1]] = m
           end
           p = Production(lhs, m, (), float(rhsKeys[2]))
           add!(g, p)
   
       elseif length( rhsKeys ) == 3
+        # nonterminal rule
           if haskey(nt, rhsKeys[1])
-              j = get(nt, rhsKeys[1], -1)
+              j = nt[rhsKeys[1]]
           else
               j = Nonterminal( rhsKeys[1] )
-              merge!(nt, {rhsKeys[1] => j})
+              nt[rhsKeys[1]] = j
           end
           if haskey(nt, rhsKeys[2])
-              k = get(nt, rhsKeys[2], -1)
+              k = nt[rhsKeys[2]]
           else
               k = Nonterminal( rhsKeys[2] )
-              merge!(nt, {rhsKeys[2] => k})
+              nt[rhsKeys[2]] = k
           end
           p = Production(lhs, j, k, float(rhsKeys[3]))
           add!(g, p)

@@ -1,3 +1,4 @@
 Thumbs.db
 *.pdf
 data/
+.DS_Store
