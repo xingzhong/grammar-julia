@@ -1,4 +1,5 @@
 # inside probability julia
+using JudyDicts
 
 
 function inside( O, A, B )
@@ -47,50 +48,44 @@ function inside( O, A, B )
   return E
 end
 
-function debug_SortDict(D::Dict{(Int64, Int64, Nonterminal), (Int64, Nonterminal, Nonterminal)})
+function debug_SortDict(D)
   G = collect(D)
   indx = sortperm([g[1][1]-g[1][2] for g in G])
   map(x->println(G[x]), indx)
 end
 
-function debug_SortDict(D::Dict{(Int64, Int64, Nonterminal), Float64})
-  G = collect(D)
-  indx = sortperm([g[2] for g in G])
-  map(x->println(G[x]), indx)
-end
 function CYK(O, A, B)
   # CYK chart parsing 
   # O Observation
   # A and B defined the grammar
 
-  Gamma = Dict{(Int, Int, Nonterminal), Float64}()
-  Tau = Dict()
+  #Gamma = Dict{(Int, Int, Nonterminal), Float64}()
+  #Tau = Dict{(Int, Int, Nonterminal), Union((Int, Nonterminal, Nonterminal), String)}()
+  GT = Dict{(Int, Int, Nonterminal), (Float64, Union((Int, Nonterminal, Nonterminal), String))}()
   T = size(O, 1)
   # init 
 
-  for s in 1:T
+  for s=1:T
       o = vec(O[s, :])
-      for rule in keys(B)
-        # rule: i -> m 
-        i = rule[1]
-        m = rule[2]
-        b = get(B, rule, 0)
-        merge!(Gamma, {(s,s,i) => log(b) + logpdf(m.dist, o)})
-        merge!(Tau,  {(s,s,i) => m.symbol} )
-      end
-      
+      pmap (x->begin
+                #Gamma[(s,s,x[1])] = log(get(B,x,0)) + logpdf(x[2].dist, o)
+                #Tau[(s,s,x[1])] = x[2].symbol
+                GT[(s,s,x[1])] = (log(get(B,x,0)) + logpdf(x[2].dist, o), x[2].symbol)
+              end, collect(keys(B)))
   end
+
   println("Init Gamma")
-  debug_SortDict(Gamma)
+  debug_SortDict(GT)
   # bottom-up
   for dt in 1:T
     println(dt/T)
-    for s in 1:T
+    for s=1:T
         t = s + dt
         if t<=T
             for rule in keys(A)
+            #pmap(rule->begin
               # rule: i->jk
-              max_g = Dict()
+              max_g = Dict{(Int, Nonterminal, Nonterminal), Float64}()
               i = rule[1]
               j = rule[2]
               k = rule[3]
@@ -98,24 +93,28 @@ function CYK(O, A, B)
                   #println((s,t,r,rule))
                   #println((s,r,j, haskey(Gamma, (s,r,j))))
                   #println((r+1,t,k, haskey(Gamma, (r+1,t,k))))
-                  if haskey(A, rule) && haskey(Gamma, (s,r,j)) && haskey(Gamma, (r+1, t, k))
-                    merge!( max_g,  {(r, rule[2], rule[3]) => log(get(A, rule, 0)) +  get(Gamma, (s,r,j),0) + get(Gamma, (r+1,t,k),0)} )
+                  if haskey(A, rule) && haskey(GT, (s,r,j)) && haskey(GT, (r+1, t, k))
+                    max_g[(r, rule[2], rule[3])] = log(get(A, rule, 0)) +  get(GT, (s,r,j),0)[1] + get(GT, (r+1,t,k),0)[1]
                     #println((s,r,j,k,rule))
                   end
               end
-              if haskey(Gamma, (s,t,i))
-                  merge!( max_g, {get(Tau, (s,t,i), (0,0,0)) => get(Gamma, (s,t,i), 0)} )
+              if haskey(GT, (s,t,i))
+                  key = get(GT, (s,t,i), "error")
+                  max_g[key[2]]= get(GT, (s,t,i), 0)[1]
               end
               if length(max_g) != 0
                   maxg = maxdict(max_g)
-                  merge!(Gamma, {(s,t,i) => maxg[2] })
-                  merge!(Tau, {(s,t,i) => maxg[1] })
+                  #Gamma[(s,t,i)] = maxg[2]
+                  #Tau[(s,t,i)] = maxg[1]
+                  GT[(s,t,i)] = (maxg[2], maxg[1])
               end
-            end
+            #end, collect(keys(A)))
+          end
         end
     end
   end
-  return Gamma, Tau
+  #return Gamma, Tau
+  return GT
 end
 
 function _buildTree(key, value::String, tau)
@@ -129,15 +128,15 @@ function _buildTree(key, value::(Int, Nonterminal, Nonterminal), tau)
     right_key = (value[1]+1, key[2], value[3])
     left = get(tau, left_key, "error")
     right = get(tau, right_key, "error")
-    _buildTree(left_key, left, tau)
-    _buildTree(right_key, right, tau)
+    _buildTree(left_key, left[2], tau)
+    _buildTree(right_key, right[2], tau)
     print("]")
 end
-function buildTree(tau, start, O)
+function buildTree(GT, start, O)
   T = size(O, 1)
-  root = get(tau, (1,T,start), "error")
-  _buildTree((1,T,start), root, tau)
-  return get(Gamma, (1,T,start), "-inf")
+  root = get(GT, (1,T,start), "error")
+  _buildTree((1,T,start), root[2], GT)
+  return get(GT, (1,T,start), "-inf")[1]
 end
 
 function maxdict(d)

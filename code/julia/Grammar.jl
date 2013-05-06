@@ -1,6 +1,6 @@
 # grammar julia
 using Distributions
-type Nonterminal
+immutable Nonterminal
     symbol::String
 end
 #function isequal(x::Nonterminal, y::Nonterminal)
@@ -14,7 +14,7 @@ end
 #  return x.symbol == y.symbol
 #end
 
-type Production
+immutable Production
     lhs::Nonterminal
     lrhs
     rrhs
@@ -24,7 +24,6 @@ type Production
 end
 
 function eachcnf(lhsKey, rhsKey, g, nt, t)
-  #FIXME need make sure the uniqueness 
   if beginswith(rhsKey, '[')
       rhsKey = split(rhsKey, ['[', ']'], 0, false)
       mean = eval( parse( "["*rhsKey[1]*"]") )
