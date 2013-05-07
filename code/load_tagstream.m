@@ -14,7 +14,7 @@ function [tags]=load_tagstream(tagstream_file, allowed_tags);
 %
 % Author: Sebastian Nowozin <Sebastian.Nowozin@microsoft.com>
 fid=fopen(tagstream_file,'r');
-A=textscan(fid,'%s;%s','Whitespace',';');
+A=textscan(fid,'%s %s %*[^\n]','delimiter',';');
 fclose(fid);
 if ~strcmp(A{1}(1),'XQPCTick') || ~strcmp(A{2}(1),'Tag')
 	error(['Invalid tagstream file format']);
