@@ -1,4 +1,6 @@
 # inside probability julia
+using JudyDicts
+
 
 function inside( O, A, B )
   # O Observation
@@ -57,13 +59,36 @@ function CYK(O, A, B)
   # O Observation
   # A and B defined the grammar
 
+  #Gamma = Dict{(Int, Int, Nonterminal), Float64}()
+  #Tau = Dict{(Int, Int, Nonterminal), Union((Int, Nonterminal, Nonterminal), String)}()
   GT = Dict{(Int, Int, Nonterminal), (Float64, Union((Int, Nonterminal, Nonterminal), String))}()
   T = size(O, 1)
   # init 
 
   for s=1:T
       o = vec(O[s, :])
+<<<<<<< HEAD
+      for rule in keys(B)
+        # rule: i -> m 
+        i = rule[1]
+        m = rule[2]
+        b = get(B, rule, 0)
+        #println((i,m,b,o))
+        merge!(Gamma, {(s,s,i) => log(b) + logpdf(m.dist, o)})
+        merge!(Tau,  {(s,s,i) => m.symbol} )
+      end
+      
+  end
+  # println("Init Gamma")
+  # debug_SortDict(Gamma)
+  # bottom-up
+  for dt in 1:T
+    @printf(STDOUT, "\r%.2f%%", 100*dt/T)
+    for s in 1:T
+=======
       pmap (x->begin
+                #Gamma[(s,s,x[1])] = log(get(B,x,0)) + logpdf(x[2].dist, o)
+                #Tau[(s,s,x[1])] = x[2].symbol
                 GT[(s,s,x[1])] = (log(get(B,x,0)) + logpdf(x[2].dist, o), x[2].symbol)
               end, collect(keys(B)))
   end
@@ -72,11 +97,13 @@ function CYK(O, A, B)
   debug_SortDict(GT)
   # bottom-up
   for dt in 1:T
-    @printf(STDOUT, "\r%.2f%%", 100*dt/T)
+    println(dt/T)
     for s=1:T
+>>>>>>> optimize
         t = s + dt
         if t<=T
             for rule in keys(A)
+            #pmap(rule->begin
               # rule: i->jk
               max_g = Dict{(Int, Nonterminal, Nonterminal), Float64}()
               i = rule[1]
@@ -97,12 +124,16 @@ function CYK(O, A, B)
               end
               if length(max_g) != 0
                   maxg = maxdict(max_g)
+                  #Gamma[(s,t,i)] = maxg[2]
+                  #Tau[(s,t,i)] = maxg[1]
                   GT[(s,t,i)] = (maxg[2], maxg[1])
               end
+            #end, collect(keys(A)))
           end
         end
     end
   end
+  #return Gamma, Tau
   return GT
 end
 
