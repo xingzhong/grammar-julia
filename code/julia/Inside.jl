@@ -68,8 +68,8 @@ function CYK(O, A, B)
               end, collect(keys(B)))
   end
 
-  println("Init Gamma")
-  debug_SortDict(GT)
+  #println("Init Gamma")
+  #debug_SortDict(GT)
   # bottom-up
   for dt in 1:T
     @printf(STDOUT, "\r%.2f%%", 100*dt/T)
