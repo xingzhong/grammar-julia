@@ -6,9 +6,10 @@ fileName = "../../sample/P3_2_8_p02.csv"
 #fileName = "../../sample/P1_1_12_p19.csv"
 println("\nloading data "*fileName)
 frame = DataMS(fileName)
-test = transpose(frame.ob[:, 1:2, 7]) # 119
+test = transpose(frame.ob[:, 1:2, 7])
 #test = randn(2, 500)
 res = kmeans(test, 4)
+show(res.assignments)
 show(Points(res.centers[1,:], res.centers[2,:]))
 p = FramedPlot()
 data = Points(test[1,:], test[2,:], "type", "circle", "symbolsize", "0.5")
