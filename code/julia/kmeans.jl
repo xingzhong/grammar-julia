@@ -1,5 +1,6 @@
 using Clustering
-using Winston
+#using Winston
+
 
 include("loader.jl")
 fileName = "../../sample/P3_2_8_p02.csv"
@@ -9,14 +10,29 @@ frame = DataMS(fileName)
 test = transpose(frame.ob[:, 1:2, 7])
 #test = randn(2, 500)
 res = kmeans(test, 4)
-show(res.assignments)
-show(Points(res.centers[1,:], res.centers[2,:]))
-p = FramedPlot()
-data = Points(test[1,:], test[2,:], "type", "circle", "symbolsize", "0.5")
-setattr(data, "label", "data")
-label = Points(res.centers[1,:], res.centers[2,:], "type", "filled circle", "color", "red")
-setattr(data, "label", "label")
+tokens = res.assignments
+d = Dict()
+for idx in 2:length(tokens)
+  key = (tokens[idx-1], tokens[idx])
+  d[key] = get(d, key, 0) + 1
+end
 
-add(p, data)
-add(p, label)
-file(p, "kmean.png")
+relation = Array(Int, 4, 4)
+for (k,v) in d 
+    relation[k[1], k[2]] = v
+end
+
+show (relation)
+rule = Dict(1:4, mapslices(indmax, relation, 1))
+
+tokens2 = Array(Int, 0)
+ind = 1
+while ind < length(tokens) -1
+  push!(tokens2, tokens[ind])
+  if ( rule[tokens[ind]] == tokens[ind+1] )
+      ind += 1
+  end
+  ind+=1
+end
+
+println()
